@@ -1,0 +1,26 @@
+# 论文风格（docx）：学术排版，章节编号、宋体、固定行距
+headings:
+  h1: { size: 20, color: "#000000", font: "黑体", align: "left" }
+  h2: { size: 17, color: "#000000", font: "黑体", align: "left" }
+  h3: { size: 15, color: "#000000", font: "宋体", align: "left" }
+  h4: { size: 13.5, color: "#000000", font: "宋体", align: "left" }
+  h5: { size: 12.5, color: "#000000", font: "宋体", align: "left" }
+  h6: { size: 12, color: "#000000", font: "宋体", align: "left" }
+body:
+  font: "宋体"
+  size: 12
+  line_height: 1.5
+  color: "#000000"
+code:
+  font: "Consolas"
+  size: 10
+  color: "#333333"
+  background: "#F5F5F5"
+_docx:
+  first_indent: 2
+  heading_align: "left"
+  margins:
+    top: 2.54
+    bottom: 2.54
+    left: 3.18
+    right: 3.18

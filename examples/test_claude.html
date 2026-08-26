@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>md2style</title>
+<style>
+:root {
+  --h1-size: 30px; --h1-color: #1A1A1A; --h1-font: Georgia, 'Times New Roman', serif;
+  --h2-size: 24px; --h2-color: #1A1A1A; --h2-font: Georgia, 'Times New Roman', serif;
+  --h3-size: 20px; --h3-color: #2A2A2A; --h3-font: Georgia, 'Times New Roman', serif;
+  --body-size: 16px; --body-color: #2A2A2A; --body-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+  --line-height: 1.7;
+  --code-bg: #F6F8FA; --code-color: #D6336C;
+  --divider: #E5E7EB;
+  --card-bg: #F5F5F7;
+  --card-radius: 12px;
+  --accent: #D4A27F;
+}
+body { font-family: var(--body-font); font-size: var(--body-size); color: var(--body-color); line-height: var(--line-height); max-width: 760px; margin: 40px auto; padding: 0 20px; }
+h1 { font-size: var(--h1-size); color: var(--h1-color); font-family: var(--h1-font); }
+h2 { font-size: var(--h2-size); color: var(--h2-color); font-family: var(--h2-font); }
+h3 { font-size: var(--h3-size); color: var(--h3-color); font-family: var(--h3-font); }
+hr { border: none; border-top: 1px solid var(--divider); margin: 32px 0; }
+pre { background: var(--code-bg); color: var(--code-color); padding: 16px; border-radius: var(--card-radius); overflow:auto; }
+code { font-family: monospace; }
+.card { background: var(--card-bg); border-radius: var(--card-radius); padding: 16px 20px; margin: 16px 0; }
+blockquote { border-left: 3px solid var(--accent); margin: 0; padding-left: 16px; color: var(--body-color); }
+table { border-collapse: collapse; width: 100%; }
+table td, table th { border: 1px solid var(--divider); padding: 8px 12px; }
+</style>
+</head>
+<body>
+<h1>md2style 效果演示</h1>
+<p>这是一个用于展示多格式转换效果的测试文档，覆盖了常见 Markdown 元素。</p>
+<h2>1. 标题层级</h2>
+<h3>三级标题</h3>
+<h4>四级标题</h4>
+<p>正文段落示例：md2style 将同一份 Markdown 转换为 Word / HTML / PPT，样式由预定义 YAML 或用户学习所得控制。</p>
+<h2>2. 强调与引用</h2>
+<blockquote></blockquote>
+<p>行内 **加粗**、*斜体* 与 `行内代码` 也都会被保留为语义节点。</p>
+<h2>3. 列表</h2>
+<li>预定义风格：论文 / 公文 / Claude / Mac</li>
+<li>逆向学习：拖入模板即学</li>
+<li>双入口：CLI 与本地 Web</li>
+<li>第一步：写 Markdown</li>
+<li>第二步：选风格</li>
+<li>第三步：导出</li>
+<h2>4. 代码块</h2>
+<div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">convert</span><span class="p">(</span><span class="n">md</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;把 Markdown 按指定风格转换。&quot;&quot;&quot;</span>
+    <span class="n">ir</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">to_ir</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">ir</span><span class="p">,</span> <span class="n">engine</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">style</span><span class="p">))</span>
+</pre></div>
+
+<h2>5. 表格</h2>
+<table><thead><tr><th>格式</th></tr></thead><tbody><tr><td>预定义风格</td></tr><tr><td>学习支持</td></tr><tr><td>Word</td></tr><tr><td>论文 / 公文</td></tr><tr><td>✅</td></tr><tr><td>HTML</td></tr><tr><td>Claude / Mac</td></tr><tr><td>✅</td></tr><tr><td>PPT</td></tr><tr><td>复用 HTML</td></tr><tr><td>—</td></tr></tbody></table>
+<hr>
+<blockquote></blockquote>
+</body>
+</html>

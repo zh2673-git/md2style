@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>md2style</title>
+<style>
+:root {
+  --h1-size: 32px; --h1-color: #1D1D1F; --h1-font: -apple-system, 'SF Pro Display', 'PingFang SC', sans-serif;
+  --h2-size: 26px; --h2-color: #1D1D1F; --h2-font: -apple-system, 'SF Pro Display', 'PingFang SC', sans-serif;
+  --h3-size: 21px; --h3-color: #1D1D1F; --h3-font: -apple-system, 'SF Pro Text', 'PingFang SC', sans-serif;
+  --body-size: 16px; --body-color: #1D1D1F; --body-font: -apple-system, 'SF Pro Text', 'PingFang SC', sans-serif;
+  --line-height: 1.6;
+  --code-bg: #F2F2F7; --code-color: #0A84FF;
+  --divider: #E5E7EB;
+  --card-bg: #F5F5F7;
+  --card-radius: 12px;
+  --accent: #0A84FF;
+}
+body { font-family: var(--body-font); font-size: var(--body-size); color: var(--body-color); line-height: var(--line-height); max-width: 760px; margin: 40px auto; padding: 0 20px; }
+h1 { font-size: var(--h1-size); color: var(--h1-color); font-family: var(--h1-font); }
+h2 { font-size: var(--h2-size); color: var(--h2-color); font-family: var(--h2-font); }
+h3 { font-size: var(--h3-size); color: var(--h3-color); font-family: var(--h3-font); }
+hr { border: none; border-top: 1px solid var(--divider); margin: 32px 0; }
+pre { background: var(--code-bg); color: var(--code-color); padding: 16px; border-radius: var(--card-radius); overflow:auto; }
+code { font-family: monospace; }
+.card { background: var(--card-bg); border-radius: var(--card-radius); padding: 16px 20px; margin: 16px 0; }
+blockquote { border-left: 3px solid var(--accent); margin: 0; padding-left: 16px; color: var(--body-color); }
+table { border-collapse: collapse; width: 100%; }
+table td, table th { border: 1px solid var(--divider); padding: 8px 12px; }
+</style>
+</head>
+<body>
+<h1>项目说明</h1>
+<p>这是一个用于演示 md2style 转换效果的示例文档。</p>
+<h2>功能特性</h2>
+<li>Markdown 转 Word / HTML / PPT</li>
+<li>预定义论文、公文、Claude、Mac 风格</li>
+<li>从 Word 逆向学习样式</li>
+<h2>代码示例</h2>
+<div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">hello</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, md2style!&quot;</span><span class="p">)</span>
+</pre></div>
+
+<h2>表格示例</h2>
+<table><thead><tr><th>名称</th></tr></thead><tbody><tr><td>格式</td></tr><tr><td>风格</td></tr><tr><td>论文</td></tr><tr><td>docx</td></tr><tr><td>paper</td></tr><tr><td>官网</td></tr><tr><td>html</td></tr><tr><td>claude</td></tr></tbody></table>
+</body>
+</html>

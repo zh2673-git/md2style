@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "md2style"
+version = "0.1.0"
+description = "统一 CLI + 本地 Web 界面，将 Markdown 转为多格式（docx/html/pptx）并支持从 Word 逆向学习样式"
+authors = ["md2style"]
+readme = "README.md"
+packages = [{ include = "md2style" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-docx = "^1.1.0"
+python-pptx = "^0.6.23"
+Jinja2 = "^3.1.0"
+Pygments = "^2.17.0"
+PyYAML = "^6.0"
+markdown-it-py = "^3.0.0"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

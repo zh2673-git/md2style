@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>md2style · Markdown 多格式转换</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --border:#2a2f3a;
+    --text:#e6e8ec; --muted:#9aa3b2; --accent:#ff9d2e; --accent2:#4f9dff;
+    --ok:#34d399; --err:#f87171;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+       background:var(--bg);color:var(--text);line-height:1.6}
+  header{padding:28px 32px 12px;border-bottom:1px solid var(--border)}
+  header h1{margin:0;font-size:24px;font-weight:700}
+  header h1 .mark{color:var(--accent)}
+  header p{margin:6px 0 0;color:var(--muted);font-size:14px}
+  .tabs{display:flex;gap:8px;padding:16px 32px 0;flex-wrap:wrap}
+  .tab{padding:10px 18px;border:1px solid var(--border);border-bottom:none;
+       background:var(--panel);color:var(--muted);border-radius:8px 8px 0 0;
+       cursor:pointer;font-size:14px;user-select:none}
+  .tab.active{background:var(--panel2);color:var(--text);border-color:var(--accent)}
+  .panel{display:none;padding:24px 32px 40px;background:var(--panel2);
+         border:1px solid var(--border);margin:0 32px 32px;border-radius:0 8px 8px 8px}
+  .panel.active{display:block}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;
+        padding:18px 20px;margin-bottom:18px}
+  .card h3{margin:0 0 12px;font-size:15px;color:var(--accent2)}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+  input[type=text],input[type=number],select,input[type=file]{
+    width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--border);
+    border-radius:6px;color:var(--text);font-size:14px}
+  input[type=file]{padding:7px}
+  input[type=color]{width:100%;height:38px;padding:2px;background:var(--bg);
+    border:1px solid var(--border);border-radius:6px;cursor:pointer}
+  .swatch-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+  .swatch{width:20px;height:20px;border-radius:4px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+  .swatch:hover{transform:scale(1.12)}
+  .swatch.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 18px}
+  @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:160px}
+  .field{margin-bottom:2px}
+  button.primary{margin-top:16px;background:var(--accent);color:#1a1205;border:none;
+    padding:11px 22px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}
+  button.primary:hover{filter:brightness(1.08)}
+  .msg{margin-top:14px;font-size:14px;padding:10px 14px;border-radius:6px;display:none}
+  .msg.ok{display:block;background:rgba(52,211,153,.12);color:var(--ok);
+          border:1px solid rgba(52,211,153,.4)}
+  .msg.err{display:block;background:rgba(248,113,113,.12);color:var(--err);
+           border:1px solid rgba(248,113,113,.4)}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px}
+  .reset{background:transparent;color:var(--muted);border:1px solid var(--border);
+    padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:10px}
+  .ghost{background:transparent;color:var(--text);border:1px solid var(--border);
+    padding:9px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+  .ghost:hover{border-color:var(--accent)}
+  .danger{background:transparent;color:var(--err);border:1px solid var(--err);
+    padding:9px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+  .danger:hover{background:rgba(248,113,113,.12)}
+  #previewBox{margin-top:16px;border:1px solid var(--border);border-radius:8px;
+    background:#fff;height:60vh;overflow:auto}
+  #previewBox iframe{width:100%;height:100%;border:none;background:#fff}
+  details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:6px}
+  .spacer{height:14px}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="mark">md2style</span> · Markdown 多格式转换</h1>
+  <p>将 Markdown 转为 Word / HTML / PPT，支持从 Word/HTML 逆向学习样式，并可在预设风格基础上微调字体与间距。</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="convert">① 转换</div>
+  <div class="tab" data-tab="preview">② 预览</div>
+  <div class="tab" data-tab="learn">③ 学习样式</div>
+</div>
+
+<!-- 转换 -->
+<section class="panel active" id="panel-convert">
+  <div class="card">
+    <h3>转换设置</h3>
+    <div class="row">
+      <div>
+        <label>输出格式</label>
+        <select id="c-fmt">
+          <option value="docx">docx（Word）</option>
+          <option value="html">html（网页）</option>
+          <option value="pptx">pptx（幻灯片）</option>
+        </select>
+      </div>
+      <div>
+        <label>样式</label>
+        <select id="c-style"></select>
+        <div class="hint" id="c-style-hint"></div>
+      </div>
+    </div>
+    <label>上传 Markdown（.md）</label>
+    <input type="file" id="c-file" accept=".md">
+  </div>
+
+  <div class="card">
+    <h3>微调（默认可选；切换样式会自动载入该风格当前值）
+      <button class="reset" id="c-reset">恢复所选风格默认</button></h3>
+    <div class="grid" id="c-headings"></div>
+    <div class="spacer"></div>
+    <div class="grid">
+      <div class="field"><label>正文字体</label><select id="c-body_font"></select></div>
+      <div class="field"><label>正文字号</label><input type="number" step="0.5" id="c-body_size"></div>
+      <div class="field"><label>正文颜色</label><input type="color" id="c-body_color"></div>
+      <div class="field"><label>行距</label><input type="number" step="0.1" id="c-line_height"></div>
+      <div class="field"><label>段落间距 (em)</label><input type="number" step="0.1" id="c-para_spacing"></div>
+      <div class="field"><label>代码字体</label><select id="c-code_font"></select></div>
+      <div class="field"><label>代码字号</label><input type="number" step="0.5" id="c-code_size"></div>
+      <div class="field"><label>代码颜色</label><input type="color" id="c-code_color"></div>
+      <div class="field"><label>代码背景</label><input type="color" id="c-code_bg"></div>
+    </div>
+  </div>
+
+  <button class="primary" id="c-submit">开始转换并下载</button>
+  <div class="msg" id="c-msg"></div>
+</section>
+
+<!-- 预览 -->
+<section class="panel" id="panel-preview">
+  <div class="card">
+    <h3>预览（生成临时 HTML 内联显示）</h3>
+    <div class="hint" style="margin:2px 0 10px">预览统一以 HTML 呈现，<b>所有已有样式均可选</b>（含 claude/mac/official/paper 及学习所得）。</div>
+    <div class="row">
+      <div>
+        <label>样式（全部样式）</label>
+        <select id="p-style"></select>
+        <button class="reset" id="p-reset">载入默认</button>
+      </div>
+    </div>
+    <label>上传 Markdown（.md）</label>
+    <input type="file" id="p-file" accept=".md">
+    <div class="grid" style="margin-top:14px">
+      <div class="field"><label>H1 颜色</label><input type="color" id="p-h1_color"></div>
+      <div class="field"><label>正文字体</label><select id="p-body_font"></select></div>
+    </div>
+  </div>
+  <button class="primary" id="p-submit">生成预览</button>
+  <div class="msg" id="p-msg"></div>
+  <div id="previewBox" style="display:none"><iframe id="p-frame"></iframe></div>
+</section>
+
+<!-- 学习 -->
+<section class="panel" id="panel-learn">
+  <div class="card">
+    <h3>① 学习新样式（上传模板即学，立即可用）</h3>
+    <label>上传模板（Word 或 HTML）</label>
+    <input type="file" id="l-file" accept=".docx,.html,.htm">
+    <label>新样式命名</label>
+    <input type="text" id="l-name" placeholder="如 my_company">
+    <button class="primary" id="l-submit">学习样式</button>
+    <div class="msg" id="l-msg"></div>
+  </div>
+
+  <div class="card">
+    <h3>② 管理已有样式（无需上传，直接选 yaml 查看 / 编辑 / 保存）</h3>
+    <div class="row">
+      <div>
+        <label>选择样式文件</label>
+        <select id="l-name-sel"></select>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="ghost" id="l-load">载入</button>
+        <button class="ghost" id="l-new" style="margin-left:8px">另存为新样式</button>
+      </div>
+    </div>
+    <textarea id="l-yaml" spellcheck="false"
+      style="width:100%;height:340px;margin-top:12px;background:var(--bg);color:var(--text);
+             border:1px solid var(--border);border-radius:6px;padding:12px;font-family:Consolas,Menlo,monospace;font-size:13px;line-height:1.5"></textarea>
+    <div class="row" style="margin-top:12px;align-items:center;flex-wrap:wrap;gap:10px">
+      <button class="primary" id="l-save">保存修改</button>
+      <input type="text" id="l-new-name" placeholder="新样式名"
+        style="max-width:200px">
+      <button class="ghost" id="l-blank">新建空白</button>
+      <button class="ghost" id="l-new">另存为新样式</button>
+      <button class="danger" id="l-del">删除此样式</button>
+    </div>
+    <div class="msg" id="l-edit-msg"></div>
+  </div>
+</section>
+
+<script>
+const $ = id => document.getElementById(id);
+const NUM_KEYS = ['body_size','line_height','para_spacing','code_size',
+  'h1_size','h2_size','h3_size','h4_size','h5_size','h6_size'];
+const COLOR_KEYS = ['body_color','code_color','code_bg',
+  'h1_color','h2_color','h3_color','h4_color','h5_color','h6_color'];
+const FONT_KEYS = ['body_font','code_font',
+  'h1_font','h2_font','h3_font','h4_font','h5_font','h6_font'];
+
+// 常用预设色（点击直接选；没有的再用色板挑）
+const SWATCHES = [
+  '#000000','#FFFFFF','#1A1A1A','#2A2A2A','#555555','#888888',
+  '#D4A27F','#C0392B','#E74C3C','#FF9D2E','#F39C12','#F1C40F',
+  '#27AE60','#34D399','#1ABC9C','#16A085','#2E86DE','#4F9DFF',
+  '#8E44AD','#9B59B6','#E84393','#FF6B81','#1E1E1E','#F6F8FA',
+];
+
+// 给颜色 input 挂载预设色块；点击写入值并高亮，色板仍可挑自定义色
+function attachSwatches(inputId) {
+  const el = $(inputId);
+  if (!el || el._swatched) return;
+  el._swatched = true;
+  const row = document.createElement('div');
+  row.className = 'swatch-row';
+  SWATCHES.forEach(c => {
+    const s = document.createElement('div');
+    s.className = 'swatch';
+    s.style.background = c;
+    s.title = c;
+    s.onclick = () => { el.value = c; markSel(row, c); };
+    row.appendChild(s);
+  });
+  el.parentNode.insertBefore(row, el.nextSibling);
+  // 色板改动时也同步高亮
+  el.addEventListener('input', () => markSel(row, el.value));
+}
+function markSel(row, val) {
+  const v = (val || '').toLowerCase();
+  row.querySelectorAll('.swatch').forEach(s => {
+    s.classList.toggle('sel', s.title.toLowerCase() === v);
+  });
+}
+
+let FONT_OPTIONS = [];
+
+// Tab 切换
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $('panel-' + t.dataset.tab).classList.add('active');
+  };
+});
+
+// 动态生成 H1-H6 微调行（字号=number, 颜色=color, 字体=select）
+const hWrap = $('c-headings');
+for (let lv = 1; lv <= 6; lv++) {
+  hWrap.insertAdjacentHTML('beforeend', `
+    <div class="field"><label>H${lv} 字号</label><input type="number" step="0.5" id="c-h${lv}_size"></div>
+    <div class="field"><label>H${lv} 颜色</label><input type="color" id="c-h${lv}_color"></div>
+    <div class="field"><label>H${lv} 字体</label><select id="c-h${lv}_font"></select></div>
+  `);
+  attachSwatches('c-h' + lv + '_color');
+}
+
+function fillFontSelect(sel, current) {
+  const opts = [...new Set([...(current ? [current] : []), ...FONT_OPTIONS])];
+  sel.innerHTML = opts.map(f => `<option value="${f}">${f}</option>`).join('');
+  if (current) sel.value = current;
+}
+
+// 把风格默认值回填到全部微调控件
+function applyStyle(detail) {
+  for (const k of NUM_KEYS) {
+    const el = $('c-' + k); if (el && detail[k] != null) el.value = detail[k];
+  }
+  for (const k of COLOR_KEYS) {
+    const el = $('c-' + k); if (el && detail[k]) { el.value = detail[k].startsWith('#') ? detail[k] : '#000000'; el.dispatchEvent(new Event('input')); }
+  }
+  for (const k of FONT_KEYS) {
+    const el = $('c-' + k); if (el) fillFontSelect(el, detail[k] || '');
+  }
+}
+
+const WEB_ONLY = ['claude','mac'];
+async function refreshStyles(selId, fmt) {
+  const res = await fetch('/api/styles?fmt=' + fmt);
+  const data = await res.json();
+  const sel = $(selId);
+  sel.innerHTML = data.styles.map(s => `<option value="${s}">${s}</option>`).join('');
+  if (selId === 'c-style') {
+    $('c-style-hint').textContent = (fmt === 'docx')
+      ? 'docx 不支持 claude/mac，已自动过滤' : 'claude/mac 仅适用于 html/pptx';
+  }
+}
+async function loadConvertStyle() {
+  const name = $('c-style').value;
+  if (!name) return;
+  const r = await fetch('/api/style/' + encodeURIComponent(name));
+  if (r.ok) applyStyle(await r.json());
+}
+async function loadPreviewStyle() {
+  const name = $('p-style').value;
+  if (!name) return;
+  const r = await fetch('/api/style/' + encodeURIComponent(name));
+  if (!r.ok) return;
+  const d = await r.json();
+  if (d.h1_color) { $('p-h1_color').value = d.h1_color; $('p-h1_color').dispatchEvent(new Event('input')); }
+  fillFontSelect($('p-body_font'), d.body_font || '');
+}
+
+(async () => {
+  const fr = await fetch('/api/fonts');
+  FONT_OPTIONS = (await fr.json()).fonts;
+  // 静态颜色字段挂载预设色块
+  ['c-body_color','c-code_color','c-code_bg','p-h1_color'].forEach(attachSwatches);
+  await refreshStyles('c-style', $('c-fmt').value);
+  await refreshStyles('p-style', 'all');
+  await loadConvertStyle();
+  await loadPreviewStyle();
+})();
+
+$('c-fmt').onchange = () => refreshStyles('c-style', $('c-fmt').value);
+$('c-style').onchange = loadConvertStyle;
+$('p-style').onchange = loadPreviewStyle;
+$('c-reset').onclick = loadConvertStyle;
+$('p-reset').onclick = loadPreviewStyle;
+
+function showMsg(box, ok, text) {
+  box.className = 'msg ' + (ok ? 'ok' : 'err');
+  box.textContent = text;
+}
+
+// 转换
+$('c-submit').onclick = async () => {
+  const f = $('c-file').files[0];
+  if (!f) return showMsg($('c-msg'), false, '请先上传 Markdown 文件');
+  const fd = new FormData();
+  fd.append('md_file', f);
+  fd.append('fmt', $('c-fmt').value);
+  fd.append('style', $('c-style').value);
+  const fields = [...NUM_KEYS, ...COLOR_KEYS];
+  // 字体字段：h1_font -> h1_font 直接传；body/code 用 body_font/code_font
+  const fontMap = {'h1_font':'h1_font','h2_font':'h2_font','h3_font':'h3_font',
+    'h4_font':'h4_font','h5_font':'h5_font','h6_font':'h6_font',
+    'body_font':'body_font','code_font':'code_font'};
+  for (const k of fields) {
+    const v = $('c-' + k).value;
+    if (v !== '' && v != null) fd.append(k, v);
+  }
+  for (const k in fontMap) {
+    const v = $('c-' + k).value;
+    if (v) fd.append(fontMap[k], v);
+  }
+  try {
+    const r = await fetch('/api/convert', {method:'POST', body:fd});
+    if (!r.ok) { const e = await r.json(); throw new Error(e.detail || '转换失败'); }
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'md2style_output' + ({docx:'.docx',html:'.html',pptx:'.pptx'}[$('c-fmt').value]);
+    a.click();
+    showMsg($('c-msg'), true, '转换完成，文件已下载。');
+  } catch(e) { showMsg($('c-msg'), false, e.message); }
+};
+
+// 预览
+$('p-submit').onclick = async () => {
+  const f = $('p-file').files[0];
+  if (!f) return showMsg($('p-msg'), false, '请先上传 Markdown 文件');
+  const fd = new FormData();
+  fd.append('md_file', f);
+  fd.append('style', $('p-style').value);
+  const hc = $('p-h1_color').value;
+  const bf = $('p-body_font').value;
+  if (hc) fd.append('h1_color', hc);
+  if (bf) fd.append('body_font', bf);
+  try {
+    const r = await fetch('/api/preview', {method:'POST', body:fd});
+    if (!r.ok) { const e = await r.json(); throw new Error(e.detail || '预览失败'); }
+    const html = await r.text();
+    $('p-frame').srcdoc = html;
+    $('previewBox').style.display = 'block';
+    showMsg($('p-msg'), true, '预览已生成。');
+  } catch(e) { showMsg($('p-msg'), false, e.message); }
+};
+
+// ===== ① 上传模板学习（独立，不依赖编辑区） =====
+$('l-submit').onclick = async () => {
+  const f = $('l-file').files[0];
+  const name = $('l-name').value.trim();
+  if (!f) return showMsg($('l-msg'), false, '请先上传模板文件');
+  if (!name) return showMsg($('l-msg'), false, '请填写新样式命名');
+  const fd = new FormData();
+  fd.append('template_file', f);
+  fd.append('name', name);
+  try {
+    const r = await fetch('/api/learn', {method:'POST', body:fd});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || '学习失败');
+    showMsg($('l-msg'), true, data.msg);
+    await refreshStyles('c-style', $('c-fmt').value);
+    await refreshStyles('p-style', 'all');
+    await loadAllStyles();           // 把新样式加入编辑区下拉
+  } catch(e) { showMsg($('l-msg'), false, e.message); }
+};
+
+// ===== ② 管理已有样式（无需上传，直接选 yaml 编辑） =====
+// 载入全部样式到编辑区下拉
+async function loadAllStyles() {
+  const r = await fetch('/api/styles?fmt=all');
+  const d = await r.json();
+  $('l-name-sel').innerHTML = d.all.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+// 读取选中样式的 yaml 内容到编辑框
+async function loadYaml(name) {
+  if (!name) return;
+  const r = await fetch('/api/style_yaml/' + encodeURIComponent(name));
+  if (!r.ok) { showMsg($('l-edit-msg'), false, '读取失败: ' + name); return; }
+  const d = await r.json();
+  $('l-yaml').value = d.content;
+}
+$('l-load').onclick = () => loadYaml($('l-name-sel').value);
+$('l-name-sel').onchange = () => loadYaml($('l-name-sel').value);
+
+// 保存编辑后的 yaml（覆盖当前选中样式）
+$('l-save').onclick = async () => {
+  const name = $('l-name-sel').value;
+  const content = $('l-yaml').value;
+  try {
+    const r = await fetch('/api/style_yaml/' + encodeURIComponent(name), {
+      method: 'POST', headers: {'Content-Type': 'text/plain'}, body: content
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || '保存失败');
+    showMsg($('l-edit-msg'), true, d.msg);
+    await refreshStyles('c-style', $('c-fmt').value);
+    await refreshStyles('p-style', 'all');
+  } catch(e) { showMsg($('l-edit-msg'), false, e.message); }
+};
+
+// 另存为新样式（不覆盖原文件）
+$('l-new').onclick = async () => {
+  const newName = $('l-new-name').value.trim();
+  const content = $('l-yaml').value;
+  if (!newName) return showMsg($('l-edit-msg'), false, '请填写“新样式名”');
+  try {
+    const r = await fetch('/api/style_yaml_new/' + encodeURIComponent(newName), {
+      method: 'POST', headers: {'Content-Type': 'text/plain'}, body: content
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || '另存失败');
+    showMsg($('l-edit-msg'), true, d.msg);
+    await loadAllStyles();
+    $('l-name-sel').value = newName;
+    await refreshStyles('c-style', $('c-fmt').value);
+    await refreshStyles('p-style', 'all');
+  } catch(e) { showMsg($('l-edit-msg'), false, e.message); }
+};
+
+// 新建空白样式（从零开始）
+$('l-blank').onclick = async () => {
+  const newName = $('l-new-name').value.trim();
+  if (!newName) return showMsg($('l-edit-msg'), false, '请在“新样式名”填写名字');
+  try {
+    const r = await fetch('/api/style_yaml_blank/' + encodeURIComponent(newName), {method: 'POST'});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || '新建失败');
+    showMsg($('l-edit-msg'), true, d.msg);
+    await loadAllStyles();
+    $('l-name-sel').value = newName;
+    await loadYaml(newName);
+    await refreshStyles('c-style', $('c-fmt').value);
+    await refreshStyles('p-style', 'all');
+  } catch(e) { showMsg($('l-edit-msg'), false, e.message); }
+};
+
+// 删除样式（危险，二次确认）
+$('l-del').onclick = async () => {
+  const name = $('l-name-sel').value;
+  if (!name) return;
+  if (!confirm(`确定删除样式「${name}」？此操作不可撤销。`)) return;
+  try {
+    const r = await fetch('/api/style_yaml/' + encodeURIComponent(name), {method: 'DELETE'});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || '删除失败');
+    showMsg($('l-edit-msg'), true, d.msg);
+    await loadAllStyles();
+    if ($('l-name-sel').options.length) await loadYaml($('l-name-sel').value);
+    await refreshStyles('c-style', $('c-fmt').value);
+    await refreshStyles('p-style', 'all');
+  } catch(e) { showMsg($('l-edit-msg'), false, e.message); }
+};
+
+// 初始：编辑区直接加载全部样式（无需先上传）
+loadAllStyles().then(() => {
+  if ($('l-name-sel').options.length) loadYaml($('l-name-sel').value);
+});
+</script>
+</body>
+</html>
