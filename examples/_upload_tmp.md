@@ -35,19 +35,23 @@
 
 ## 界面截图 | Screenshots
 
-> 以下截图来自真实运行的 Web 界面（`http://127.0.0.1:8080`）；预览样本即本 README 文件本身。
-> Screenshots are captured from the running local web interface; the preview sample is this very README file.
+> 以下截图来自真实运行的 Web 界面（`http://127.0.0.1:8080`）。
+> Screenshots are captured from the running local web interface.
 
-### 总览 | Overview
-
-| 转换（微调） · 预览（本 README） · 学习/管理 | Convert (tune) · Preview (this README) · Learn & Manage |
+### ① 转换 Tab（颜色色板 + 字体下拉 + 数字微调）
+| Convert Tab with color swatches, font dropdowns, and number inputs |
 |---|---|
-| ![overview](docs/screenshots/web-overview.png) |
+| ![convert](docs/screenshots/web-convert.png) |
 
-### 预览效果（本仓库 README 渲染后的 HTML）
-| Preview of this README rendered as HTML |
+### ② 预览 Tab（实时生成 HTML 并内联显示）
+| Preview Tab renders HTML inline in real time |
 |---|---|
 | ![preview](docs/screenshots/web-preview.png) |
+
+### ③ 学习样式 / 管理已有样式（载入/新建空白/另存/删除）
+| Learn & Manage styles (load / create blank / save-as / delete) |
+|---|---|
+| ![learn](docs/screenshots/web-learn.png) |
 
 ---
 
