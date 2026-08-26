@@ -12,9 +12,9 @@
 
 ## 简介 | Introduction
 
-**中文**：`md2style` 是一个本地优先的 Markdown 转换工具，可将 Markdown 一键转换为 **Word / HTML / PPT**，支持从 Word/HTML 模板**逆向学习样式**，并在预设风格基础上**微调字体、颜色与间距**。提供 **FastAPI + 原生 HTML/JS** 的 Web 界面，也提供命令行（CLI），适合普通用户与自动化/LLM 调用。
+`md2style` 是一个本地优先的 Markdown 转换工具，可将 Markdown 一键转换为 **Word / HTML / PPT**，支持从 Word/HTML 模板**逆向学习样式**，并在预设风格基础上**微调字体、颜色与间距**。提供 **FastAPI + 原生 HTML/JS** 的 Web 界面，也提供命令行（CLI），适合普通用户与自动化/LLM 调用。
 
-**English**: `md2style` is a local-first Markdown converter that turns Markdown into **Word / HTML / PPT**. It can **learn styles from Word/HTML templates** and lets you **fine-tune fonts, colors, and spacing** on top of built-in presets. It ships with a **FastAPI + vanilla HTML/JS** web UI as well as a CLI for automation and LLM workflows.
+`md2style` is a local-first Markdown converter that turns Markdown into **Word / HTML / PPT**. It can **learn styles from Word/HTML templates** and lets you **fine-tune fonts, colors, and spacing** on top of built-in presets. It ships with a **FastAPI + vanilla HTML/JS** web UI as well as a CLI for automation and LLM workflows.
 
 > 仓库地址 | Repository: https://github.com/zh2673-git/md2style.git
 
@@ -22,38 +22,61 @@
 
 ## 功能特性 | Features
 
-| 中文 | English |
-|---|---|
-| 多格式输出：`.docx` / `.html` / `.pptx` | Multi-format output: `.docx` / `.html` / `.pptx` |
-| 预设风格：HTML/PPT 的 `claude`（金橙暖调）、`mac`（苹果蓝）；Word 的 `official`（公文）、`paper`（论文） | Built-in presets: `claude` (warm gold/orange) / `mac` (Apple blue) for HTML/PPT; `official` / `paper` for Word |
-| 从 Word/HTML **学习新样式**，生成 YAML 预设 | **Learn new styles** from Word/HTML templates and save as YAML presets |
-| 在预设风格上微调：H1–H6 字号/颜色/字体、正文字体/字号/颜色/行距/段间距、代码块配色 | Fine-tune on presets: H1–H6 size/color/font, body font/size/color/line-height/spacing, code block colors |
-| Web 界面三区 Tab（转换 / 预览 / 学习管理），互不阻塞 | Web UI with three tabs (Convert / Preview / Learn & Manage) that don't block each other |
-| CLI 子命令参数经白名单校验，防止未知参数扩散 | CLI arguments validated against an allow-list to block hallucinated parameters |
+多格式输出：`.docx` / `.html` / `.pptx`。
+
+Multi-format output: `.docx` / `.html` / `.pptx`.
+
+预设风格：HTML/PPT 的 `claude`（金橙暖调）、`mac`（苹果蓝）；Word 的 `official`（公文）、`paper`（论文）。
+
+Built-in presets: `claude` (warm gold/orange) / `mac` (Apple blue) for HTML/PPT; `official` / `paper` for Word.
+
+从 Word/HTML **学习新样式**，生成 YAML 预设并立即可用。
+
+**Learn new styles** from Word/HTML templates and save as YAML presets that are usable immediately.
+
+在预设风格上微调：H1–H6 字号/颜色/字体、正文字体/字号/颜色/行距/段间距、代码块配色。
+
+Fine-tune on presets: H1–H6 size/color/font, body font/size/color/line-height/spacing, code block colors.
+
+Web 界面三区 Tab（转换 / 预览 / 学习管理），互不阻塞。
+
+Web UI with three tabs (Convert / Preview / Learn & Manage) that don't block each other.
+
+CLI 子命令参数经白名单校验，防止未知参数扩散。
+
+CLI arguments are validated against an allow-list to block hallucinated parameters.
 
 ---
 
 ## 界面截图 | Screenshots
 
-> 以下截图来自真实运行的 Web 界面（`http://127.0.0.1:8080`）；预览样本即本 README 文件本身。
-> Screenshots are captured from the running local web interface; the preview sample is this very README file.
+以下截图来自真实运行的 Web 界面（`http://127.0.0.1:8080`）；预览样本即本 README 文件本身。
+
+Screenshots are captured from the running local web interface; the preview sample is this very README file.
 
 ### 总览 | Overview
 
-| 转换（微调） · 预览（本 README） · 学习/管理 | Convert (tune) · Preview (this README) · Learn & Manage |
-|---|---|
-| ![overview](docs/screenshots/web-overview.png) |
+左：转换（微调） · 中：预览（本 README） · 右：学习 / 管理样式。
 
-### 预览效果（本仓库 README 渲染后的 HTML）
-| Preview of this README rendered as HTML |
-|---|---|
-| ![preview](docs/screenshots/web-preview.png) |
+Left: Convert (tune) · Middle: Preview (this README) · Right: Learn & Manage styles.
+
+![overview](docs/screenshots/web-overview.png)
+
+### 预览效果 | Preview
+
+本仓库 README 渲染后的 HTML（claude 风格）。
+
+This README rendered as HTML (claude style).
+
+![preview](docs/screenshots/web-preview.png)
 
 ---
 
 ## 安装 | Installation
 
-需要 Python 3.10+。/ Requires Python 3.10+.
+需要 Python 3.10+。
+
+Requires Python 3.10+.
 
 ```bash
 cd md2style
@@ -75,9 +98,13 @@ pip install python-docx python-pptx Jinja2 Pygments PyYAML markdown-it-py fastap
 python -m md2style.interfaces.web
 ```
 
-浏览器打开 | Open in browser: http://127.0.0.1:8080
+浏览器打开：`http://127.0.0.1:8080`
 
-界面顶部有三个 Tab：/ The top has three tabs:
+Open in browser: `http://127.0.0.1:8080`
+
+界面顶部有三个 Tab：
+
+The top has three tabs:
 
 1. **转换 | Convert**：上传 `.md` → 选输出格式 → 选样式 → 微调字段默认显示当前风格取值 → 转换下载
    - 选 `docx` 时样式下拉仅显示 `official` / `paper`；`claude` / `mac` 仅用于 `html` / `pptx`
@@ -89,13 +116,17 @@ python -m md2style.interfaces.web
 4. **管理已有样式 | Manage**：载入任意 `.yaml` 查看/编辑/保存；新建空白样式；另存为新样式；删除样式（二次确认）
    - Load any `.yaml` to edit/save; create a blank style; save-as; delete (confirmation required)
 
-一键启动脚本：/ One-click startup:
+一键启动脚本：
+
+One-click startup:
 
 ```bash
 python start_web.py
 ```
 
-API 文档：/ API docs: http://127.0.0.1:8080/docs
+API 文档：`http://127.0.0.1:8080/docs`
+
+API docs: `http://127.0.0.1:8080/docs`
 
 ### B. 命令行 | CLI
 
@@ -122,25 +153,27 @@ python -m md2style.cli learn -t my_template.docx -n my_company
 
 ## 微调参数一览 | Fine-tune Parameters (CLI)
 
-在所选风格基础上覆盖，留空则使用默认。/ Override selected style values; omit to keep defaults.
+在所选风格基础上覆盖，留空则使用默认。
 
-| 参数 / Parameter | 说明 / Description |
-|---|---|
-| `--h1-size` … `--h6-size` | H1–H6 字号 / H1–H6 font size |
-| `--h1-color` … `--h6-color` | H1–H6 颜色 / H1–H6 color |
-| `--h1-font` … `--h6-font` | H1–H6 字体 / H1–H6 font |
-| `--body-font` | 正文字体 / Body font |
-| `--body-size` | 正文字号 / Body font size |
-| `--body-color` | 正文颜色 / Body color |
-| `--line-height` | 正文行距 / Body line height |
-| `--para-spacing` | 段落间距（em）/ Paragraph spacing (em) |
-| `--code-font` | 代码字体 / Code font |
-| `--code-size` | 代码字号 / Code font size |
-| `--code-color` | 代码颜色 / Code color |
-| `--code-bg` | 代码背景 / Code background |
-| `--template` | docx 模板（dotx）名 / docx template (dotx) name |
+Override selected style values; omit to keep defaults.
 
-Web 界面中上述参数对应为：颜色字段为色板、字体字段为下拉、数字字段为数字框，切换样式自动回填当前风格默认值。/ In the web UI: colors are swatches, fonts are dropdowns, sizes are number inputs, and changing the style auto-fills the preset values.
+- `--h1-size` … `--h6-size`：H1–H6 字号 / H1–H6 font size
+- `--h1-color` … `--h6-color`：H1–H6 颜色 / H1–H6 color
+- `--h1-font` … `--h6-font`：H1–H6 字体 / H1–H6 font
+- `--body-font`：正文字体 / Body font
+- `--body-size`：正文字号 / Body font size
+- `--body-color`：正文颜色 / Body color
+- `--line-height`：正文行距 / Body line height
+- `--para-spacing`：段落间距（em）/ Paragraph spacing (em)
+- `--code-font`：代码字体 / Code font
+- `--code-size`：代码字号 / Code font size
+- `--code-color`：代码颜色 / Code color
+- `--code-bg`：代码背景 / Code background
+- `--template`：docx 模板（dotx）名 / docx template (dotx) name
+
+Web 界面中上述参数对应为：颜色字段为色板、字体字段为下拉、数字字段为数字框，切换样式自动回填当前风格默认值。
+
+In the web UI: colors are swatches, fonts are dropdowns, sizes are number inputs, and changing the style auto-fills the preset values.
 
 ---
 
@@ -151,7 +184,9 @@ DEFAULT（硬编码兜底） < YAML（预设/学习所得） < CLI/Web 微调参
 DEFAULT (hard-coded fallback) < YAML (presets / learned) < CLI/Web fine-tune overrides
 ```
 
-合并后经 `StyleEngine.validate` 校验（颜色格式、字号范围、字体存在性），非法参数直接报错，不会生成脏文件。/ After merging, `StyleEngine.validate` checks color format, size ranges, and font availability; invalid values raise errors instead of producing broken files.
+合并后经 `StyleEngine.validate` 校验（颜色格式、字号范围、字体存在性），非法参数直接报错，不会生成脏文件。
+
+After merging, `StyleEngine.validate` checks color format, size ranges, and font availability; invalid values raise errors instead of producing broken files.
 
 ---
 
@@ -187,9 +222,14 @@ pytest
 
 ## 设计原则 | Design Principles
 
-- **白名单机制 / Allow-list only**：CLI/Web 仅接受已知参数，未知参数一律拦截，杜绝 LLM 幻觉扩散。/ Only known parameters are accepted; unknown parameters are rejected to prevent LLM hallucinations from spreading downstream.
-- **界面无业务规则 / UI holds no business rules**：Web/CLI 只做参数采集与展示，所有规则在 Orchestrator / Engines / Renderers 中统一处理。/ Web/CLI only collect and display parameters; all rules live in the orchestrator/engines/renderers.
-- **可学习 / Learnable**：用户看到好模板即可“拖入即学”，沉淀为可复用的 YAML 预设。/ Users can drop in any nice template to learn its style and turn it into a reusable YAML preset.
+- **白名单机制 / Allow-list only**：CLI/Web 仅接受已知参数，未知参数一律拦截，杜绝 LLM 幻觉扩散。
+- Only known parameters are accepted; unknown parameters are rejected to prevent LLM hallucinations from spreading downstream.
+
+- **界面无业务规则 / UI holds no business rules**：Web/CLI 只做参数采集与展示，所有规则在 Orchestrator / Engines / Renderers 中统一处理。
+- Web/CLI only collect and display parameters; all rules live in the orchestrator/engines/renderers.
+
+- **可学习 / Learnable**：用户看到好模板即可“拖入即学”，沉淀为可复用的 YAML 预设。
+- Users can drop in any nice template to learn its style and turn it into a reusable YAML preset.
 
 ---
 
