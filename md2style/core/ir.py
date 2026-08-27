@@ -16,6 +16,7 @@ class NodeType(str, Enum):
     TABLE = "table"
     QUOTE = "quote"
     HR = "hr"
+    RAW_HTML = "raw_html"
 
 
 @dataclass
@@ -26,6 +27,7 @@ class InlineRun:
     italic: bool = False
     code: bool = False
     link: str = ""            # 链接地址，空表示非链接
+    raw: bool = False          # 原样 HTML（如 <a id="1"></a>），渲染时不转义
 
 
 @dataclass

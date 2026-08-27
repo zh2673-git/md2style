@@ -19,7 +19,7 @@ def re_match_br(s: str) -> bool:
 
 class MdParser:
     def __init__(self):
-        self._md = MarkdownIt("commonmark").enable("table")
+        self._md = MarkdownIt("commonmark").enable("table").enable("html_block").enable("html_inline")
 
     def to_ir(self, md_text: str) -> IR:
         tokens = self._md.parse(md_text)
@@ -99,6 +99,11 @@ class MdParser:
                 ir.append(IRNode(type=NodeType.HR))
                 i += 1
 
+            elif tok.type == "html_block":
+                # 裸 HTML 块（如 <a id="1"></a> 锚点、<div> 等）：原样保留
+                ir.append(IRNode(type=NodeType.RAW_HTML, text=tok.content))
+                i += 1
+
             elif tok.type == "table_open":
                 rows, align, i = self._collect_table(tokens, i, n)
                 ir.append(IRNode(type=NodeType.TABLE, rows=rows, align=align))
@@ -165,11 +170,11 @@ class MdParser:
             elif tok.type == "hardbreak":
                 runs.append(InlineRun(text="\n"))
             elif tok.type == "html_inline":
-                # <br> 等内联 HTML：换行标签转 \n，其余原样保留
+                # <br> 等内联 HTML：换行标签转 \n，其余原样保留（不转义）
                 if re_match_br(tok.content):
                     runs.append(InlineRun(text="\n"))
                 else:
-                    runs.append(InlineRun(text=tok.content))
+                    runs.append(InlineRun(text=tok.content, raw=True))
             elif tok.type == "link_open":
                 url = tok.attrs.get("href", "")
                 j = i + 1

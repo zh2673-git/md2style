@@ -134,6 +134,10 @@ class HtmlRenderer(RendererBase):
         if node.type == NodeType.HEADING:
             return f"<h{node.level}{style_attr}>{_render_runs(node)}</h{node.level}>"
         if node.type == NodeType.PARAGRAPH:
+            runs = node.runs
+            # 段落若仅由裸 HTML（如孤立锚点 <a id="1"></a>）组成，则不包裹 <p>，避免多余空段落
+            if runs and all(getattr(r, "raw", False) for r in runs):
+                return _render_runs(node)
             return f"<p{style_attr}>{_render_runs(node)}</p>"
         if node.type == NodeType.CODE:
             lexer = _safe_lexer(node.lang)
@@ -147,6 +151,9 @@ class HtmlRenderer(RendererBase):
             return f"<blockquote>{inner}</blockquote>"
         if node.type == NodeType.HR:
             return "<hr>"
+        if node.type == NodeType.RAW_HTML:
+            # 裸 HTML（如 <a id="1"></a> 锚点、<div> 等）：原样输出，不转义
+            return node.text
         if node.type == NodeType.TABLE:
             return _render_table(node)
         return ""
@@ -195,7 +202,10 @@ def _render_runs(node) -> str:
         return _render_inline(node.text)
     out = []
     for r in runs:
-        if r.link:
+        if r.raw:
+            # 原样 HTML（如 <a id="1"></a>）：不转义
+            out.append(r.text)
+        elif r.link:
             out.append(f'<a href="{_esc(r.link)}">{_esc(r.text)}</a>')
         elif r.code:
             out.append(f"<code>{_esc(r.text)}</code>")
@@ -228,7 +238,9 @@ def _render_runs_from_runs(runs) -> str:
         if r.text == "\n":
             out.append("\n")
             continue
-        if r.link:
+        if r.raw:
+            out.append(r.text)
+        elif r.link:
             out.append(f'<a href="{_esc(r.link)}">{_esc(r.text)}</a>')
         elif r.code:
             out.append(f"<code>{_esc(r.text)}</code>")
