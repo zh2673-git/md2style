@@ -23,6 +23,11 @@ env/
 ~$*.pptx
 ~$*.xlsx
 
+# 转换/上传临时产物
+examples/_out.*
+examples/_upload_tmp.*
+examples/_verify_*
+
 # OS
 .DS_Store
 Thumbs.db
