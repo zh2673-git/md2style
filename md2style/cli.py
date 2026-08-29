@@ -10,6 +10,36 @@ from .orchestrator import Orchestrator
 from .core.errors import ParamWhitelistError, Md2StyleError
 
 
+def _add_tune_args(p: argparse.ArgumentParser) -> None:
+    """给 convert / batch 挂上通用的样式与微调参数。"""
+    p.add_argument("-s", default="", help="样式名（paper/official/claude/mac/已学习）")
+    # 微调：标题字号/颜色（H1-H6）
+    p.add_argument("--h1-size", type=int, help="H1 字号")
+    p.add_argument("--h1-color", help="H1 颜色 #RRGGBB")
+    p.add_argument("--h2-size", type=int, help="H2 字号")
+    p.add_argument("--h2-color", help="H2 颜色")
+    p.add_argument("--h3-size", type=int, help="H3 字号")
+    p.add_argument("--h3-color", help="H3 颜色")
+    p.add_argument("--h4-size", type=int, help="H4 字号")
+    p.add_argument("--h4-color", help="H4 颜色")
+    p.add_argument("--h5-size", type=int, help="H5 字号")
+    p.add_argument("--h5-color", help="H5 颜色")
+    p.add_argument("--h6-size", type=int, help="H6 字号")
+    p.add_argument("--h6-color", help="H6 颜色")
+    # 微调：正文
+    p.add_argument("--body-font", help="正文字体")
+    p.add_argument("--body-size", type=float, help="正文字号")
+    p.add_argument("--body-color", help="正文颜色 #RRGGBB")
+    p.add_argument("--line-height", type=float, help="正文行距")
+    p.add_argument("--para-spacing", type=float, help="段落间距(em)")
+    # 微调：代码块
+    p.add_argument("--code-font", help="代码字体")
+    p.add_argument("--code-size", type=float, help="代码字号")
+    p.add_argument("--code-color", help="代码颜色 #RRGGBB")
+    p.add_argument("--code-bg", help="代码背景 #RRGGBB")
+    p.add_argument("--template", help="docx 模板 dotx 名")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="md2style",
@@ -20,32 +50,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_convert = sub.add_parser("convert", help="转换 Markdown 为多格式")
     p_convert.add_argument("-i", required=True, help="输入 md 路径")
     p_convert.add_argument("-o", required=True, help="输出路径（后缀决定格式）")
-    p_convert.add_argument("-s", default="", help="样式名（paper/official/claude/mac/已学习）")
-    # 微调：标题字号/颜色（H1-H6）
-    p_convert.add_argument("--h1-size", type=int, help="H1 字号")
-    p_convert.add_argument("--h1-color", help="H1 颜色 #RRGGBB")
-    p_convert.add_argument("--h2-size", type=int, help="H2 字号")
-    p_convert.add_argument("--h2-color", help="H2 颜色")
-    p_convert.add_argument("--h3-size", type=int, help="H3 字号")
-    p_convert.add_argument("--h3-color", help="H3 颜色")
-    p_convert.add_argument("--h4-size", type=int, help="H4 字号")
-    p_convert.add_argument("--h4-color", help="H4 颜色")
-    p_convert.add_argument("--h5-size", type=int, help="H5 字号")
-    p_convert.add_argument("--h5-color", help="H5 颜色")
-    p_convert.add_argument("--h6-size", type=int, help="H6 字号")
-    p_convert.add_argument("--h6-color", help="H6 颜色")
-    # 微调：正文
-    p_convert.add_argument("--body-font", help="正文字体")
-    p_convert.add_argument("--body-size", type=float, help="正文字号")
-    p_convert.add_argument("--body-color", help="正文颜色 #RRGGBB")
-    p_convert.add_argument("--line-height", type=float, help="正文行距")
-    p_convert.add_argument("--para-spacing", type=float, help="段落间距(em)")
-    # 微调：代码块
-    p_convert.add_argument("--code-font", help="代码字体")
-    p_convert.add_argument("--code-size", type=float, help="代码字号")
-    p_convert.add_argument("--code-color", help="代码颜色 #RRGGBB")
-    p_convert.add_argument("--code-bg", help="代码背景 #RRGGBB")
-    p_convert.add_argument("--template", help="docx 模板 dotx 名")
+    _add_tune_args(p_convert)
+
+    p_batch = sub.add_parser("batch", help="批量转换目录下的 Markdown")
+    p_batch.add_argument("-i", required=True, help="输入目录，或 glob 模式（如 docs/*.md）")
+    p_batch.add_argument("-o", required=True, help="输出目录")
+    p_batch.add_argument("-f", default="docx", help="输出格式 docx/html/pptx（默认 docx）")
+    p_batch.add_argument("--flat", action="store_true", help="不保留子目录结构，全部平铺到输出目录")
+    p_batch.add_argument("--no-recursive", action="store_false", dest="recursive",
+                         help="只处理输入目录第一层，不递归子目录")
+    _add_tune_args(p_batch)
 
     p_learn = sub.add_parser("learn", help="从 Word 学习样式")
     p_learn.add_argument("-t", required=True, help="模板 docx 路径")

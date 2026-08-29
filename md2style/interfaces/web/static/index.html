@@ -101,8 +101,9 @@
         <div class="hint" id="c-style-hint"></div>
       </div>
     </div>
-    <label>上传 Markdown（.md）</label>
-    <input type="file" id="c-file" accept=".md">
+    <label>上传 Markdown（.md，可多选；多个文件将打包为 zip）</label>
+    <input type="file" id="c-file" accept=".md" multiple>
+    <div class="hint" id="c-file-hint"></div>
   </div>
 
   <div class="card">
@@ -324,12 +325,20 @@ function showMsg(box, ok, text) {
   box.textContent = text;
 }
 
-// 转换
+// 转换（支持多文件：多个打包为 zip）
+$('c-file').onchange = () => {
+  const n = $('c-file').files.length;
+  const hint = $('c-file-hint');
+  if (!n) { hint.textContent = ''; $('c-submit').textContent = '开始转换并下载'; return; }
+  hint.textContent = n === 1 ? `已选择：${$('c-file').files[0].name}` : `已选择 ${n} 个文件，将打包为 zip 下载`;
+  $('c-submit').textContent = n === 1 ? '开始转换并下载' : `开始批量转换（${n} 个）并下载 zip`;
+};
+
 $('c-submit').onclick = async () => {
-  const f = $('c-file').files[0];
-  if (!f) return showMsg($('c-msg'), false, '请先上传 Markdown 文件');
+  const files = [...$('c-file').files];
+  if (!files.length) return showMsg($('c-msg'), false, '请先上传 Markdown 文件');
   const fd = new FormData();
-  fd.append('md_file', f);
+  files.forEach(f => fd.append('md_file', f));
   fd.append('fmt', $('c-fmt').value);
   fd.append('style', $('c-style').value);
   const fields = [...NUM_KEYS, ...COLOR_KEYS];
@@ -351,9 +360,12 @@ $('c-submit').onclick = async () => {
     const blob = await r.blob();
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'md2style_output' + ({docx:'.docx',html:'.html',pptx:'.pptx'}[$('c-fmt').value]);
+    a.download = files.length === 1
+      ? 'md2style_output' + ({docx:'.docx',html:'.html',pptx:'.pptx'}[$('c-fmt').value])
+      : 'md2style_batch.zip';
     a.click();
-    showMsg($('c-msg'), true, '转换完成，文件已下载。');
+    showMsg($('c-msg'), true,
+      files.length === 1 ? '转换完成，文件已下载。' : `已批量转换 ${files.length} 个文件，zip 已下载。`);
   } catch(e) { showMsg($('c-msg'), false, e.message); }
 };
 

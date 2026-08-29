@@ -26,6 +26,10 @@
 
 Multi-format output: `.docx` / `.html` / `.pptx`.
 
+批量转换：CLI 的 `batch` 子命令可一次转换整个目录（递归或 glob），Web 界面支持多选文件并打包 zip 下载。
+
+Batch conversion: the CLI `batch` subcommand converts a whole directory (recursive or glob) at once; the web UI accepts multiple files and returns a zip.
+
 预设风格：HTML/PPT 的 `claude`（金橙暖调）、`mac`（苹果蓝）；Word 的 `official`（公文）、`paper`（论文）。
 
 Built-in presets: `claude` (warm gold/orange) / `mac` (Apple blue) for HTML/PPT; `official` / `paper` for Word.
@@ -109,6 +113,8 @@ The top has three tabs:
 1. **转换 | Convert**：上传 `.md` → 选输出格式 → 选样式 → 微调字段默认显示当前风格取值 → 转换下载
    - 选 `docx` 时样式下拉仅显示 `official` / `paper`；`claude` / `mac` 仅用于 `html` / `pptx`
    - Choose `docx` to see `official` / `paper`; `claude` / `mac` are only available for `html` / `pptx`
+   - 可一次选中多个 `.md`；单文件直接下载，多文件打包为 `zip`（同名文件自动加序号，不覆盖）
+   - Select multiple `.md` files: a single file downloads directly, multiple files come back as a `zip` (duplicate names get a numeric suffix instead of overwriting)
 2. **预览 | Preview**：上传 `.md` → 选样式 → 生成临时 HTML 并内联显示（无需下载）
    - Upload `.md`, pick a style, and preview rendered HTML inline
 3. **学习样式 | Learn**：上传 Word/HTML 模板，命名后即可在样式下拉中使用
@@ -147,6 +153,12 @@ python -m md2style.cli preview -i examples/complex.md -s claude
 
 # 从模板学习样式 / Learn style from template
 python -m md2style.cli learn -t my_template.docx -n my_company
+
+# 批量转换整个目录（递归，保留子目录结构） / Batch convert a directory (recursive, keeps structure)
+python -m md2style.cli batch -i ./docs -o ./out -f docx -s paper
+
+# 批量转换指定 glob（仅第一层，平铺输出） / Batch convert a glob (top level only, flat output)
+python -m md2style.cli batch -i "./docs/*.md" -o ./out -f html -s claude --flat --no-recursive
 ```
 
 ---

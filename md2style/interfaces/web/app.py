@@ -4,10 +4,14 @@
 参数键名严格使用白名单 dest 名（下划线，无 --），规避旧 PyWebIO 版的 bug。
 """
 
+import shutil
+import tempfile
+import zipfile
 from pathlib import Path
+from typing import List
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from ...orchestrator import Orchestrator
@@ -40,6 +44,16 @@ def _style_options(fmt: str) -> list:
     if fmt == "docx":
         opts = [s for s in opts if s not in WEB_ONLY_STYLES]
     return opts or ["paper"]
+
+
+def _unique_name(name: str, used: dict) -> str:
+    """批量打包时避免同名文件互相覆盖：a.docx, a_1.docx, a_2.docx ..."""
+    if name not in used:
+        used[name] = 1
+        return name
+    stem, suffix = Path(name).stem, Path(name).suffix
+    used[name] += 1
+    return f"{stem}_{used[name] - 1}{suffix}"
 
 
 def create_app() -> FastAPI:
@@ -82,7 +96,8 @@ def create_app() -> FastAPI:
         return out
 
     @app.post("/api/convert")
-    async def api_convert(request: Request, md_file: UploadFile = File(...)):
+    async def api_convert(request: Request, md_file: List[UploadFile] = File(...)):
+        """转换：支持 1 个或多个 .md。单文件直接下载，多文件打包为 zip。"""
         form = await request.form()
         fmt = form.get("fmt", "")
         style = form.get("style", "")
@@ -92,30 +107,71 @@ def create_app() -> FastAPI:
         if fmt == "docx" and style in WEB_ONLY_STYLES:
             style = "paper"
 
-        # 落盘上传文件
-        md_bytes = await md_file.read()
-        in_path = EXAMPLES_DIR / "_upload_tmp.md"
-        in_path.write_bytes(md_bytes)
-        out_path = EXAMPLES_DIR / f"_out{SUFFIX[fmt]}"
-
         # 从 form 收集微调字段（仅非空），键名即白名单 dest 名
         NUM_KEYS = {"body_size", "line_height", "para_spacing", "code_size",
                     "h1_size", "h2_size", "h3_size", "h4_size", "h5_size", "h6_size"}
-        args = {"i": str(in_path), "o": str(out_path), "s": style}
+        tune = {}
         for k, v in form.items():
             if k in ("md_file", "fmt", "style"):
                 continue
             v = str(v).strip()
             if not v:
                 continue
-            args[k] = float(v) if k in NUM_KEYS else v
+            tune[k] = float(v) if k in NUM_KEYS else v
 
+        uploads = [u for u in md_file if u.filename]
+        if not uploads:
+            raise HTTPException(400, "请先上传至少一个 Markdown 文件")
+
+        # 单文件：沿用既有行为（产物落在 examples 目录）
+        if len(uploads) == 1:
+            up = uploads[0]
+            in_path = EXAMPLES_DIR / "_upload_tmp.md"
+            in_path.write_bytes(await up.read())
+            out_path = EXAMPLES_DIR / f"_out{SUFFIX[fmt]}"
+            args = {"i": str(in_path), "o": str(out_path), "s": style, **tune}
+            try:
+                result = Orchestrator(BASE_DIR).run("convert", args)
+            except (ParamWhitelistError, Md2StyleError) as e:
+                raise HTTPException(400, f"转换失败: {e}")
+            return FileResponse(result, filename=out_path.name,
+                                media_type="application/octet-stream")
+
+        # 多文件：临时目录逐个转换，打包 zip 后返回（响应结束自动清理）
+        tmp_dir = Path(tempfile.mkdtemp(prefix="md2style_batch_"))
         try:
-            result = Orchestrator(BASE_DIR).run("convert", args)
-        except (ParamWhitelistError, Md2StyleError) as e:
-            raise HTTPException(400, f"转换失败: {e}")
-        return FileResponse(result, filename=out_path.name,
-                            media_type="application/octet-stream")
+            produced: list[Path] = []
+            used: dict[str, int] = {}
+            for idx, up in enumerate(uploads):
+                raw_name = Path(up.filename or f"doc{idx}.md").name  # 防路径穿越
+                stem = Path(raw_name).stem or f"doc{idx}"
+                in_path = tmp_dir / f"in_{idx}_{raw_name}"
+                in_path.write_bytes(await up.read())
+                out_name = _unique_name(stem + SUFFIX[fmt], used)
+                out_path = tmp_dir / out_name
+                args = {"i": str(in_path), "o": str(out_path), "s": style, **tune}
+                try:
+                    Orchestrator(BASE_DIR).run("convert", args)
+                except (ParamWhitelistError, Md2StyleError) as e:
+                    raise HTTPException(400, f"{raw_name} 转换失败: {e}")
+                produced.append(out_path)
+
+            zip_path = tmp_dir / "md2style_batch.zip"
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                for p in produced:
+                    zf.write(p, p.name)
+            # 先把字节读入内存，再删除临时目录，避免流式响应与后台清理的竞态
+            data = zip_path.read_bytes()
+        except HTTPException:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            raise
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        return Response(
+            content=data,
+            media_type="application/zip",
+            headers={"Content-Disposition":
+                     f'attachment; filename="md2style_batch_{len(produced)}files.zip"'},
+        )
 
     @app.post("/api/preview")
     async def api_preview(
